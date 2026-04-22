@@ -25,15 +25,14 @@ class _SafeEnvSource(EnvSettingsSource):
     ) -> Any:
         if isinstance(value, str):
             if field_name == "database_url" and value:
-                value = _to_async_url(value)
+                return _to_async_url(value)
             if field_name == "cors_origins":
                 v = value.strip()
                 if not v:
-                    return "[]"
-                if not v.startswith("["):
-                    items = [o.strip() for o in v.split(",") if o.strip()]
-                    return json.dumps(items)
-                return v
+                    return []
+                if v.startswith("["):
+                    return json.loads(v)
+                return [o.strip() for o in v.split(",") if o.strip()]
         return super().prepare_field_value(field_name, field, value, value_is_complex)
 
 
