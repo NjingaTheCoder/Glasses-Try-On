@@ -14,3 +14,13 @@ class UploadRead(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class StorageUploadRead(BaseModel):
+    """Returned by server-side upload endpoints."""
+    bucket: str
+    path: str
+    filename: str
+    content_type: str
+    size: int
+    public_url: str

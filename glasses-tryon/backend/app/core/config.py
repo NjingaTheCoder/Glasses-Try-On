@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, EnvSettingsSource, PydanticBaseSetti
 
 
 def _to_async_url(url: str) -> str:
-    """Normalize any Postgres URL to use the asyncpg driver."""
+    """Normalize any Postgres URL to postgresql+asyncpg://."""
     url = re.sub(r"^postgres://", "postgresql://", url)
     if re.match(r"^postgresql://", url):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
@@ -16,8 +16,9 @@ def _to_async_url(url: str) -> str:
 
 class _SafeEnvSource(EnvSettingsSource):
     """
-    Intercepts env var parsing before pydantic-settings calls json.loads(),
-    which is the only safe place to normalize list[str] and URL fields.
+    Intercepts env var parsing before pydantic-settings calls json.loads().
+    For list[str] fields, pydantic-settings tries JSON-parsing the raw string
+    before any field_validator runs — this is the only safe interception point.
     """
 
     def prepare_field_value(
@@ -37,12 +38,24 @@ class _SafeEnvSource(EnvSettingsSource):
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:postgres@127.0.0.1:5434/glasses_tryon"
-    firebase_service_account_base64: str = ""
+    # ── Database ────────────────────────────────────────────────────────────
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/glasses_tryon"
+
+    # ── CORS ────────────────────────────────────────────────────────────────
     cors_origins: list[str] = [
         "http://localhost:5173",
         "https://believable-insight-production-092d.up.railway.app",
     ]
+
+    # ── Firebase ────────────────────────────────────────────────────────────
+    # Railway/production: set FIREBASE_SERVICE_ACCOUNT_JSON (raw JSON string)
+    # Local dev legacy: set FIREBASE_SERVICE_ACCOUNT_BASE64 (base64-encoded JSON)
+    firebase_service_account_json: str = ""
+    firebase_service_account_base64: str = ""
+    firebase_storage_bucket: str = ""   # e.g. "wearlen.appspot.com"
+    firebase_project_id: str = ""
+
+    # ── OpenAI ──────────────────────────────────────────────────────────────
     openai_api_key: str = ""
     openai_image_model: str = "gpt-image-1"
 
