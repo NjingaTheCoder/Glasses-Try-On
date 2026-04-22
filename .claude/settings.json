@@ -9,7 +9,8 @@
       "Bash(python -c ' *)",
       "Bash(xargs grep *)",
       "Bash(npx tsc *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(xargs ls *)"
     ]
   }
 }

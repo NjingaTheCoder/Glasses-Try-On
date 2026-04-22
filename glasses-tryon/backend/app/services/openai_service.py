@@ -4,8 +4,22 @@ import base64
 from io import BytesIO
 
 from openai import AsyncOpenAI, OpenAIError
+from PIL import Image
 
 from app.core.config import settings
+
+_MAX_INPUT_PX = 1024
+
+
+def _resize_to_fit(data: bytes, content_type: str) -> tuple[bytes, str]:
+    """Shrink image so its longest side is ≤ _MAX_INPUT_PX. Returns (bytes, mime)."""
+    img = Image.open(BytesIO(data))
+    if max(img.size) > _MAX_INPUT_PX:
+        img.thumbnail((_MAX_INPUT_PX, _MAX_INPUT_PX), Image.LANCZOS)
+    buf = BytesIO()
+    fmt = "PNG" if "png" in content_type else "JPEG"
+    img.save(buf, format=fmt)
+    return buf.getvalue(), f"image/{fmt.lower()}"
 
 _PROMPT = (
     "You are given two images.\n"
@@ -41,6 +55,9 @@ async def render_ai(
 
     client = AsyncOpenAI(api_key=settings.openai_api_key)
 
+    face_bytes, face_content_type = _resize_to_fit(face_bytes, face_content_type)
+    glasses_bytes, _ = _resize_to_fit(glasses_bytes, "image/png")
+
     image_files: list[tuple[str, BytesIO, str]] = [
         ("face.png", BytesIO(face_bytes), face_content_type),
         ("glasses.png", BytesIO(glasses_bytes), "image/png"),
@@ -53,6 +70,7 @@ async def render_ai(
             prompt=_PROMPT,
             n=1,
             size="1024x1024",
+            quality="medium",
         )
     except OpenAIError as exc:
         raise AIRenderError(f"OpenAI request failed: {exc}") from exc
