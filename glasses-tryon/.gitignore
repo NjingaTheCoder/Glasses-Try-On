@@ -1,0 +1,6 @@
+.DS_Store
+*.log
+.env
+serviceAccount.json
+set-cors.mjs
+node_modules/

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($b64 = [Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\(\"c:\\\\Users\\\\Tetel\\\\OneDrive\\\\Documentos\\\\Portfolio\\\\Humaine-Retail\\\\glasses-tryon\\\\serviceAccount.json\"\\)\\); Write-Output $b64)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose ps *)",
+      "Bash(curl -s http://localhost:8000/api/products)",
+      "Bash(curl -sv http://localhost:8000/api/products)",
+      "Bash(python -c ' *)",
+      "Bash(xargs grep *)"
+    ]
+  }
+}
