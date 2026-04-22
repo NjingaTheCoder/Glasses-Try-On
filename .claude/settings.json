@@ -7,7 +7,9 @@
       "Bash(curl -s http://localhost:8000/api/products)",
       "Bash(curl -sv http://localhost:8000/api/products)",
       "Bash(python -c ' *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)"
     ]
   }
 }
