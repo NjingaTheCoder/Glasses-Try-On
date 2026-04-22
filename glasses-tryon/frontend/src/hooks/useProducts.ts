@@ -31,7 +31,9 @@ export function useProducts(filters: ProductFilters = {}): UseProductsResult {
       const { data } = await api.get('/api/products', { params })
       setProducts(Array.isArray(data?.items) ? data.items : [])
       setTotal(typeof data?.total === 'number' ? data.total : 0)
-    } catch {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error('[useProducts] fetch failed:', msg)
       setError('Failed to load products. Is the backend running?')
     } finally {
       setLoading(false)
