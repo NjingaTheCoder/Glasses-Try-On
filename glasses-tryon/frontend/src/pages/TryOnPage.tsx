@@ -198,7 +198,6 @@ export default function TryOnPage() {
                       src={selectedProduct.image_url}
                       alt={selectedProduct.name}
                       className="max-h-full max-w-full object-contain"
-                      crossOrigin="anonymous"
                     />
                   </div>
                   <div className="px-3 py-2 text-center border-t border-gold-100">
