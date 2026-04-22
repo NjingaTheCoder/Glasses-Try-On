@@ -29,8 +29,8 @@ export function useProducts(filters: ProductFilters = {}): UseProductsResult {
         ),
       )
       const { data } = await api.get('/api/products', { params })
-      setProducts(data.items)
-      setTotal(data.total)
+      setProducts(Array.isArray(data?.items) ? data.items : [])
+      setTotal(typeof data?.total === 'number' ? data.total : 0)
     } catch {
       setError('Failed to load products. Is the backend running?')
     } finally {
