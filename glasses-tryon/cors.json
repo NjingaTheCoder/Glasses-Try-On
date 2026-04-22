@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["http://localhost:5173", "https://wearlen.web.app", "https://wearlen.firebaseapp.com"],
+    "origin": ["https://believable-insight-production-092d.up.railway.app", "https://wearlen.web.app", "https://wearlen.firebaseapp.com"],
     "method": ["GET"],
     "maxAgeSeconds": 3600,
     "responseHeader": ["Content-Type", "Access-Control-Allow-Origin"]

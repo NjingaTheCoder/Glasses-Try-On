@@ -28,7 +28,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/glasses_tryon
-      CORS_ORIGINS: '["http://localhost:5173"]'
+      CORS_ORIGINS: '["https://believable-insight-production-092d.up.railway.app"]'
     ports:
       - "8000:8000"
     volumes:
