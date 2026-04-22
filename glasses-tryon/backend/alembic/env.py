@@ -1,5 +1,7 @@
 import os
+import re
 from logging.config import fileConfig
+
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
@@ -14,12 +16,18 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-# Allow DATABASE_URL env var to override alembic.ini
-# Always convert to sync psycopg2 URL for Alembic
+
+def _to_sync_url(url: str) -> str:
+    """Convert any Postgres URL to a psycopg2 sync URL for Alembic."""
+    url = re.sub(r"^postgres://", "postgresql://", url)
+    url = re.sub(r"^postgresql\+asyncpg://", "postgresql+psycopg2://", url)
+    # plain postgresql:// has no driver suffix — psycopg2 is the default, leave as-is
+    return url
+
+
 _env_url = os.environ.get("DATABASE_URL", "")
 if _env_url:
-    sync_url = _env_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
-    config.set_main_option("sqlalchemy.url", sync_url)
+    config.set_main_option("sqlalchemy.url", _to_sync_url(_env_url))
 
 
 def run_migrations_offline() -> None:

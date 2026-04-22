@@ -1,33 +1,39 @@
 import json
+import re
 from typing import Any, Tuple, Type
 
 from pydantic_settings import BaseSettings, EnvSettingsSource, PydanticBaseSettingsSource
 
 
+def _to_async_url(url: str) -> str:
+    """Normalize any Postgres URL to use the asyncpg driver."""
+    url = re.sub(r"^postgres://", "postgresql://", url)
+    if re.match(r"^postgresql://", url):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    url = re.sub(r"^postgresql\+(?!asyncpg)[^:]+://", "postgresql+asyncpg://", url)
+    return url
+
+
 class _SafeEnvSource(EnvSettingsSource):
     """
-    Patches EnvSettingsSource so that list[str] fields (e.g. cors_origins)
-    accept empty strings and comma-separated values without crashing.
-
-    pydantic-settings calls json.loads() on complex-typed env vars *before*
-    any pydantic field_validator runs, so the only safe interception point is
-    here, in the source layer.
+    Intercepts env var parsing before pydantic-settings calls json.loads(),
+    which is the only safe place to normalize list[str] and URL fields.
     """
-
-    _LIST_FIELDS = {"cors_origins"}
 
     def prepare_field_value(
         self, field_name: str, field: Any, value: Any, value_is_complex: bool
     ) -> Any:
-        if field_name in self._LIST_FIELDS and isinstance(value, str):
-            v = value.strip()
-            if not v:
-                return "[]"                                  # empty → empty list
-            if v.startswith("["):
-                return v                                     # already JSON array
-            # comma-separated → JSON array
-            items = [o.strip() for o in v.split(",") if o.strip()]
-            return json.dumps(items)
+        if isinstance(value, str):
+            if field_name == "database_url" and value:
+                value = _to_async_url(value)
+            if field_name == "cors_origins":
+                v = value.strip()
+                if not v:
+                    return "[]"
+                if not v.startswith("["):
+                    items = [o.strip() for o in v.split(",") if o.strip()]
+                    return json.dumps(items)
+                return v
         return super().prepare_field_value(field_name, field, value, value_is_complex)
 
 
@@ -54,7 +60,7 @@ class Settings(BaseSettings):
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         return (
             init_settings,
-            _SafeEnvSource(settings_cls),   # replaces stock env_settings
+            _SafeEnvSource(settings_cls),
             dotenv_settings,
             file_secret_settings,
         )
