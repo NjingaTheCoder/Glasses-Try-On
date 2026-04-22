@@ -244,7 +244,7 @@ export default function TryOnPage() {
                 </Button>
                 {!isGenerating && (
                   <p className="text-xs text-brand-400 text-center">
-                    AI render takes 15–30 seconds · processed securely · photo not stored
+                    AI render takes 45–60 seconds · processed securely · photo not stored
                   </p>
                 )}
               </div>
