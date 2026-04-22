@@ -46,7 +46,7 @@ class _SafeEnvSource(EnvSettingsSource):
     ) -> Any:
         if isinstance(value, str):
             if field_name == "database_url" and value:
-                return _to_async_url(value)
+                return _to_async_url(value.strip())
 
             if field_name == "cors_origins":
                 v = value.strip()
