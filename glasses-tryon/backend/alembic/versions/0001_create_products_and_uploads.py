@@ -24,9 +24,13 @@ def upgrade() -> None:
     # IF NOT EXISTS makes this safe whether the type is brand-new or was left
     # behind by a previously failed migration run.
     op.execute(
-        "CREATE TYPE IF NOT EXISTS glasses_shape AS ENUM ("
+        "DO $$ BEGIN "
+        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'glasses_shape') THEN "
+        "CREATE TYPE glasses_shape AS ENUM ("
         + ", ".join(f"'{v}'" for v in _SHAPE_VALUES)
-        + ")"
+        + "); "
+        "END IF; "
+        "END $$"
     )
 
     op.create_table(
@@ -61,4 +65,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("uploads")
     op.drop_table("products")
-    op.execute("DROP TYPE IF EXISTS glasses_shape")
+    op.execute(
+        "DO $$ BEGIN "
+        "IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'glasses_shape') THEN "
+        "DROP TYPE glasses_shape; "
+        "END IF; "
+        "END $$"
+    )
